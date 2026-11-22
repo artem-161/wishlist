@@ -358,6 +358,36 @@ body{background:var(--bg);min-height:100vh}
 }
 
 .linkbtn{border:0;background:none;color:var(--muted);font-size:13px;padding:6px 0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* ---------- просмотр карточки ---------- */
+.view-panel{width:min(100%,640px);padding:0;overflow:hidden auto}
+.vw-photo{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--tile-a),var(--tile-b));display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.vw-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.vw-photo .ltr{font:600 72px var(--font-display);color:var(--accent);opacity:.55}
+.vw-photo .vnav{width:40px;height:40px;font-size:24px}
+.vw-photo .vnav.prev{left:12px}.vw-photo .vnav.next{right:12px}
+.vw-close{position:absolute;top:12px;right:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid var(--glass-edge);background:var(--glass-strong);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink);font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.vw-body{background:var(--card);padding:18px 20px 22px;display:grid;gap:12px}
+.vw-crumbs{font:500 11px var(--font-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.vw-title{margin:0;font:600 clamp(22px,4vw,28px)/1.15 var(--font-display);overflow-wrap:anywhere}
+.vw-vlabel{margin:-6px 0 0;font-weight:600;color:var(--accent)}
+.vw-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px}
+.vw-meta .h svg{width:18px;height:18px}
+.vw-price{margin:0;font:500 22px var(--font-mono)}
+.vw-price.none{font-size:15px;color:var(--muted)}
+.vw-desc{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.vw-shops{display:flex;flex-wrap:wrap;gap:8px}
+.vw-shops a{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;text-decoration:none;font-weight:600;font-size:14px;
+  color:var(--accent);background:var(--glass);border:1px solid var(--line-strong)}
+.vw-shops a:hover{border-color:var(--accent)}
+.vw-shops a::after{content:"↗";font-size:12px;opacity:.7}
+.vw-vars{display:flex;gap:6px;flex-wrap:wrap}
+.vw-vars button{border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+.vw-vars button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:transparent}
+.vw-rsv .rsv{margin-top:4px}
+.vw-rsv .btn{min-height:46px;font-size:15px}
+.vw-rsv .tag{padding:8px 10px;font-size:12px}
+.card.viewable{cursor:pointer}
 /* ---------- варианты ---------- */
 .vbox{border:1px solid var(--line);border-radius:18px;padding:12px;background:rgba(255,255,255,.12)}
 .vbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
@@ -477,6 +507,9 @@ body{background:var(--bg);min-height:100vh}
       <button type="submit" class="btn primary" id="saveBtn">Сохранить</button>
     </div>
   </form>
+</div>
+<div id="viewSheet" class="sheet" hidden>
+  <article class="panel view-panel" id="viewPanel" role="dialog" aria-modal="true" aria-labelledby="vwTitle"></article>
 </div>
 <div id="pinSheet" class="sheet" hidden>
   <form id="pinForm" class="panel pin-panel" novalidate aria-labelledby="pinTitle">
@@ -637,8 +670,67 @@ body{background:var(--bg);min-height:100vh}
     if(role==='owner'){
       n.addEventListener('click',function(){ if(n.dataset.swiped){delete n.dataset.swiped;return;} openEditor(it,vi)});
       n.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target===n){e.preventDefault();openEditor(it,vi)}});
-    } else { n.removeAttribute('role'); n.removeAttribute('tabindex'); n.removeAttribute('aria-label'); n.style.cursor='default'; }
+    } else {
+      n.classList.add('viewable'); n.setAttribute('aria-label','Подробнее: '+(it.title||''));
+      n.addEventListener('click',function(){ if(n.dataset.swiped){delete n.dataset.swiped;return;} openView(it,vi)});
+      n.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target===n){e.preventDefault();openView(it,vi)}});
+    }
     return n;
+  }
+  var view={id:null,vi:0};
+  function openView(it,vi){
+    view.id=it.id; view.vi=vi||0; drawView(0);
+    $('viewSheet').hidden=false; document.body.style.overflow='hidden';
+    setTimeout(function(){var c=$('viewPanel').querySelector('.vw-close'); if(c)c.focus();},30);
+  }
+  function closeView(){ $('viewSheet').hidden=true; view.id=null; if($('sheet').hidden)document.body.style.overflow=''; }
+  function drawView(dir){
+    var it=items.filter(function(x){return x.id===view.id})[0];
+    if(!it){closeView();return;}
+    var vars=variantsOf(it), multi=vars.length>1;
+    view.vi=Math.max(0,Math.min(view.vi,vars.length-1));
+    var v=vars[view.vi];
+    var p=$('viewPanel'); p.textContent='';
+    function go(d,e){ if(e)e.stopPropagation(); view.vi=(view.vi+d+vars.length)%vars.length; drawView(d); }
+    var ph=el('div',{class:'vw-photo'});
+    if(dir)ph.style.setProperty('--vdir',dir>0?'14px':'-14px');
+    if(v.photo){
+      var img=el('img',{src:photoUrl(v.photo),alt:it.title||'',draggable:'false'});
+      if(dir)img.style.animation='vfade .25s ease';
+      img.addEventListener('error',function(){ph.querySelector('img')&&ph.querySelector('img').remove();ph.prepend(el('span',{class:'ltr',text:(it.title||'?').charAt(0).toUpperCase()}))});
+      ph.append(img);
+    } else ph.append(el('span',{class:'ltr',text:(it.title||'?').charAt(0).toUpperCase()}));
+    ph.append(el('button',{type:'button',class:'vw-close','aria-label':'Закрыть',onclick:closeView},'×'));
+    if(multi){
+      ph.append(el('span',{class:'vbadge',text:'вариант '+(view.vi+1)+' из '+vars.length}));
+      ph.append(el('button',{type:'button',class:'vnav prev','aria-label':'Предыдущий вариант',onclick:function(e){go(-1,e)}},'‹'));
+      ph.append(el('button',{type:'button',class:'vnav next','aria-label':'Следующий вариант',onclick:function(e){go(1,e)}},'›'));
+      var dots=el('div',{class:'vdots','aria-hidden':'true'}); vars.forEach(function(_,k){dots.append(el('i',{class:k===view.vi?'on':null}))}); ph.append(dots);
+      var sx=null;
+      ph.addEventListener('pointerdown',function(e){sx=e.clientX});
+      ph.addEventListener('pointerup',function(e){ if(sx===null)return; var dx=e.clientX-sx; sx=null; if(Math.abs(dx)>35)go(dx<0?1:-1); });
+    }
+    var b=el('div',{class:'vw-body'});
+    b.append(el('div',{class:'vw-crumbs',text:[it.section,it.group].filter(Boolean).join(' · ')}));
+    b.append(el('h2',{class:'vw-title',id:'vwTitle',text:it.title||'Без названия'}));
+    if(multi)b.append(el('p',{class:'vw-vlabel',text:v.label||('Вариант '+(view.vi+1))}));
+    var meta=el('div',{class:'vw-meta'});
+    if(it.desire)meta.append(heartsEl(it.desire),el('span',{class:'lbl',text:DESIRE[it.desire]}));
+    if(it.need)meta.append(el('span',{class:'need n'+it.need,text:NEED[it.need]}));
+    if(meta.childNodes.length)b.append(meta);
+    var pt=priceText(v);
+    b.append(el('p',{class:'vw-price'+(pt?'':' none'),text:pt||'Цена не указана'}));
+    if(v.desc)b.append(el('p',{class:'vw-desc',text:v.desc}));
+    var shops=[], links=v.links||{};
+    SHOPS.forEach(function(s){var u=links[s[0]]?safeUrl(links[s[0]]):null; if(u)shops.push(el('a',{href:u,target:'_blank',rel:'noopener noreferrer'},s[1]));});
+    if(shops.length)b.append(el('div',null,el('div',{class:'lbl',text:'Где посмотреть',style:'margin-bottom:8px'}),el('div',{class:'vw-shops'},shops)));
+    if(multi){
+      var vb=el('div',{class:'vw-vars'});
+      vars.forEach(function(x,k){vb.append(el('button',{type:'button','aria-pressed':String(k===view.vi),onclick:function(){var d=k-view.vi; view.vi=k; drawView(d);}},x.label||('Вариант '+(k+1))))});
+      b.append(el('div',null,el('div',{class:'lbl',text:'Все варианты',style:'margin-bottom:8px'}),vb));
+    }
+    var rv=reserveEl(it); if(rv)b.append(el('div',{class:'vw-rsv'},rv));
+    p.append(ph,b);
   }
   function reserveEl(it){
     function stop(e){e.stopPropagation()}
@@ -742,6 +834,13 @@ body{background:var(--bg);min-height:100vh}
   }
   (function initPin(){
     $('chPin').addEventListener('click',function(){openPinSheet('change',profile)});
+    $('viewSheet').addEventListener('click',function(e){if(e.target===$('viewSheet'))closeView()});
+    document.addEventListener('keydown',function(e){
+      if($('viewSheet').hidden)return;
+      if(e.key==='Escape')closeView();
+      else if(e.key==='ArrowRight'){var n=$('viewPanel').querySelector('.vnav.next'); if(n)n.click();}
+      else if(e.key==='ArrowLeft'){var pv=$('viewPanel').querySelector('.vnav.prev'); if(pv)pv.click();}
+    });
     $('pinForm').addEventListener('submit',function(e){e.preventDefault();submitPin();});
     $('pinClose').addEventListener('click',closePin); $('pinCancel').addEventListener('click',closePin);
     $('pinSheet').addEventListener('click',function(e){if(e.target===$('pinSheet'))closePin()});
@@ -763,7 +862,7 @@ body{background:var(--bg);min-height:100vh}
     toast(role==='owner'?'Это ваш список — можно редактировать':'Чужой список — можно забронировать подарок');
     return true;
   }
-  function render(){renderHead();renderSub();renderStats();renderTabs();renderList();}
+  function render(){if(view&&view.id&&!$('viewSheet').hidden)drawView(0);renderHead();renderSub();renderStats();renderTabs();renderList();}
 
   /* фильтры */
   (function initFilters(){
