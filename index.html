@@ -1,0 +1,1040 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Вишлист Артёма</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Unbounded:wght@500;600&family=Comfortaa:wght@600;700&display=swap">
+<style>
+/* Концепция: витрина-каталог. Сводка сверху, вкладки разделов, карточки по группам, правка в нижнем листе. */
+:root{
+  --bg:#e9edf0; --surface:#f6f8f9; --raised:#ffffff; --ink:#182027; --muted:#56626d;
+  --line:#d3dae0; --line-strong:#a9b4be; --accent:#2c5f66; --accent-ink:#ffffff;
+  --heart:#d93f66; --need:#37566e; --need-bg:#dde8f0; --urgent:#8a4207; --urgent-bg:#fbe3c4;
+  --ok:#2f7d4f; --danger:#b3261e; --scrim:rgba(12,16,20,.52);
+  --tile-s:14%; --tile-l:83%; --tile-ink-l:32%;
+  --font-body:'Golos Text',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display:'Unbounded','Golos Text',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:14px; --r-sm:9px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1418; --surface:#161c22; --raised:#1d252c; --ink:#e6ebef; --muted:#9aa6b0;
+    --line:#29333c; --line-strong:#4a5762; --accent:#7cc0c7; --accent-ink:#0f1a1c;
+    --heart:#ff6f93; --need:#a7c8e0; --need-bg:#1f2f3c; --urgent:#f4b46a; --urgent-bg:#3a2a14;
+    --ok:#6fcf97; --danger:#ff8a80; --scrim:rgba(0,0,0,.62);
+    --tile-l:25%; --tile-ink-l:74%; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1418; --surface:#161c22; --raised:#1d252c; --ink:#e6ebef; --muted:#9aa6b0;
+  --line:#29333c; --line-strong:#4a5762; --accent:#7cc0c7; --accent-ink:#0f1a1c;
+  --heart:#ff6f93; --need:#a7c8e0; --need-bg:#1f2f3c; --urgent:#f4b46a; --urgent-bg:#3a2a14;
+  --ok:#6fcf97; --danger:#ff8a80; --scrim:rgba(0,0,0,.62);
+  --tile-l:25%; --tile-ink-l:74%; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding-block:22px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.top h1{margin:0;font:600 24px/1.15 var(--font-display);letter-spacing:-.01em}
+.top .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:var(--r-sm);padding:10px 14px;min-height:42px;font-weight:500}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger);border-color:var(--line-strong);background:transparent}
+.btn.danger.armed{background:var(--danger);border-color:var(--danger);color:var(--bg)}
+.btn[disabled]{opacity:.55;cursor:default}
+
+.stats{display:flex;flex-wrap:wrap;gap:4px 22px;margin:16px 0 18px;color:var(--muted);font-size:13px}
+.stats b{color:var(--ink);font-family:var(--font-mono);font-weight:500;margin-right:4px}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tab{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:500;white-space:nowrap}
+.tab span{font:400 11.5px var(--font-mono);color:var(--muted);margin-left:7px}
+.tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.tab[aria-pressed="true"] span{color:var(--bg);opacity:.75}
+
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 8px}
+.filters input{grid-column:1/-1}
+.fld{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;min-height:42px;font-size:16px}
+.fld::placeholder{color:var(--muted)}
+@media (min-width:720px){.filters{grid-template-columns:2fr 1fr 1fr}.filters input{grid-column:auto}}
+
+.legend{margin:2px 0 6px;font-size:13px;color:var(--muted)}
+.legend summary{cursor:pointer;padding:6px 0;width:max-content}
+.legend ul{list-style:none;margin:4px 0 8px;padding:0;display:grid;gap:6px}
+.legend li{display:flex;align-items:center;gap:10px}
+.legend li .hearts{flex:none;min-width:70px}
+
+.sec-h{display:flex;align-items:baseline;gap:10px;margin:30px 0 2px;flex-wrap:wrap}
+.sec-h h2{margin:0;font:600 16px/1.2 var(--font-display)}
+.sec-h .n{font:400 12px var(--font-mono);color:var(--muted)}
+.grp-h{display:flex;gap:8px;align-items:baseline;margin:16px 0 8px;font:500 11.5px var(--font-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.grp-h .line{flex:1;height:1px;background:var(--line);align-self:center}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,164px),1fr));gap:12px}
+.card{display:flex;flex-direction:column;background:var(--raised);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;min-width:0}
+.card:hover{border-color:var(--line-strong)}
+.card.is-bought{opacity:.6}
+.ph{aspect-ratio:4/3;max-width:100%;background:hsl(var(--h,200) var(--tile-s) var(--tile-l));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .ltr{font:600 34px var(--font-display);color:hsl(var(--h,200) 22% var(--tile-ink-l))}
+.cb{display:flex;flex-direction:column;gap:6px;padding:10px 11px 12px;min-width:0}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:20px}
+.hearts{display:inline-flex;gap:2px}
+.h svg{width:15px;height:15px;display:block}
+.h svg path{fill:none;stroke:var(--line-strong);stroke-width:1.7;stroke-linejoin:round}
+.h.on svg path{fill:var(--heart);stroke:var(--heart)}
+.need{font:500 10.5px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.need.n1{background:var(--need-bg);color:var(--need)}
+.need.n2{background:var(--urgent-bg);color:var(--urgent)}
+.card h3{margin:0;font-size:15px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.price{margin:0;font:400 13px var(--font-mono)}
+.price.none{color:var(--muted)}
+.desc{margin:0;font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.shops{display:flex;flex-wrap:wrap;gap:4px}
+.shops a{font-size:11.5px;padding:3px 7px;border:1px solid var(--line);border-radius:6px;color:var(--accent);text-decoration:none;font-weight:500}
+.shops a:hover{border-color:var(--accent)}
+.stt{display:inline-flex;align-items:center;gap:6px;font:500 11px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.stt i{width:8px;height:8px;border-radius:50%;background:var(--line-strong);display:block}
+.stt.watching i{background:var(--need)}
+.stt.chosen i{background:var(--accent)}
+.stt.ordered i{background:var(--urgent)}
+.stt.bought i{background:var(--ok)}
+
+.empty{border:1px dashed var(--line-strong);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--muted);margin-top:20px}
+.empty b{display:block;color:var(--ink);font:600 15px var(--font-display);margin-bottom:6px}
+.note{margin:10px 0 0;color:var(--muted);font-size:13px}
+
+.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:var(--scrim);padding-top:env(safe-area-inset-top,0px)}
+.panel{width:min(100%,580px);max-height:94%;overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px 18px 0 0;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+@media (min-width:720px){.sheet{align-items:center;padding:24px}.panel{border-radius:18px;max-height:100%;padding-bottom:18px}}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-h h2{margin:0;font:600 17px var(--font-display)}
+.x{border:0;background:transparent;font-size:28px;line-height:1;width:42px;height:42px;border-radius:var(--r-sm)}
+.field{display:grid;gap:5px;margin:0 0 12px;min-width:0;border:0;padding:0}
+.field label,.field legend,.lbl{font-size:12.5px;color:var(--muted);padding:0}
+textarea.fld{resize:vertical;min-height:76px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.links label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.err{margin:0;color:var(--danger);font-size:12.5px}
+.photo-row{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center;margin-bottom:14px}
+.photo-prev{aspect-ratio:4/3;border-radius:var(--r-sm);overflow:hidden;background:hsl(var(--h,200) var(--tile-s) var(--tile-l));display:flex;align-items:center;justify-content:center}
+.photo-prev img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-prev .ltr{font:600 30px var(--font-display);color:hsl(var(--h,200) 22% var(--tile-ink-l))}
+.photo-actions{display:flex;flex-wrap:wrap;gap:8px}
+.hint{flex-basis:100%;margin:0;font-size:12px;color:var(--muted)}
+.hearts-pick{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.hp{border:1px solid transparent;background:transparent;width:42px;height:42px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;padding:0}
+.hp svg{width:24px;height:24px}
+.hp svg path{fill:none;stroke:var(--line-strong);stroke-width:1.6;stroke-linejoin:round}
+.hp.on svg path{fill:var(--heart);stroke:var(--heart)}
+.hp-label{font-size:13px;color:var(--muted);margin-left:6px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line-strong);border-radius:var(--r-sm);overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:10px 6px;min-height:42px;font-size:13px;line-height:1.2;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.panel-f{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.grow{flex:1}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.lists{display:flex;gap:6px;flex-wrap:wrap}
+.who{display:flex;align-items:center;gap:8px;margin-left:auto}
+.who .lbl{font-size:12.5px;color:var(--muted)}
+.who .seg{grid-template-columns:repeat(3,auto)}
+.who .seg button{padding:7px 12px;min-height:36px}
+.lists a{padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none;font-size:13px;font-weight:500}
+.lists a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.guest-note{margin:0 0 14px;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.rsv{margin-top:2px;display:flex;flex-direction:column;gap:4px}
+.rsv .btn{min-height:36px;padding:7px 10px;font-size:13px;width:100%}
+.rsv .tag{font:500 11px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;padding:4px 7px;border-radius:5px;text-align:center}
+.rsv .tag.taken{background:var(--line);color:var(--muted)}
+.rsv .tag.mine{background:var(--accent);color:var(--accent-ink)}
+.rsv .undo{border:0;background:transparent;color:var(--muted);font-size:12px;text-decoration:underline;padding:2px}
+.card.is-reserved{opacity:.72}
+.spoil{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:4px 0 0;cursor:pointer;width:max-content}
+.pin-panel{width:min(100%,360px)}
+.pin-panel .fld{font:500 22px var(--font-mono);letter-spacing:.3em;text-align:center}
+.pin-panel p{margin:0 0 12px;color:var(--muted);font-size:13.5px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:80;max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r-sm);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+/* ================= ТЕМЫ + LIQUID GLASS ================= */
+/* Артём: холодная «небо и хвоя» — сине-бирюзовая, Unbounded.  Юля: тёплая «персик и сирень», Comfortaa. */
+:root[data-list="artem"]{
+  --bg:#dfe9ef; --ink:#13202b; --muted:#566676; --accent:#1f6f8b; --accent-2:#3fb6a8; --accent-ink:#fff;
+  --heart:#e2486f; --line:rgba(19,32,43,.10); --line-strong:rgba(19,32,43,.22);
+  --blob1:#7cc4e6; --blob2:#8fe0c9; --blob3:#9aa8ff; --tile-a:#cfe6f2; --tile-b:#d9f2ea;
+  --font-display:'Unbounded','Golos Text',system-ui,sans-serif;
+  --glass:rgba(255,255,255,.46); --glass-strong:rgba(255,255,255,.66); --glass-edge:rgba(255,255,255,.75);
+  --card:rgba(255,255,255,.72); --shadow:0 10px 30px -12px rgba(18,52,74,.28);
+}
+:root[data-list="yulia"]{
+  --bg:#ece6f6; --ink:#251d33; --muted:#6c6280; --accent:#a24ea6; --accent-2:#5f6fdc; --accent-ink:#fff;
+  --heart:#d9468a; --line:rgba(37,29,51,.10); --line-strong:rgba(37,29,51,.22);
+  --blob1:#c79bff; --blob2:#f4a6cf; --blob3:#8eaaff; --tile-a:#f1def3; --tile-b:#dfe3fb;
+  --font-display:'Comfortaa','Golos Text',system-ui,sans-serif;
+  --glass:rgba(255,255,255,.44); --glass-strong:rgba(255,255,255,.66); --glass-edge:rgba(255,255,255,.8);
+  --card:rgba(255,255,255,.74); --shadow:0 10px 30px -12px rgba(120,46,80,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root[data-list="artem"]:not([data-theme="light"]){
+    --bg:#08131b; --ink:#e4eef4; --muted:#93a7b6; --accent:#5cc6e0; --accent-2:#4fd6c2; --accent-ink:#04141b;
+    --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.2);
+    --blob1:#0f4c6e; --blob2:#0d5a4f; --blob3:#2a2f7a; --tile-a:#123447; --tile-b:#103f3a;
+    --glass:rgba(20,34,46,.42); --glass-strong:rgba(22,38,52,.7); --glass-edge:rgba(255,255,255,.14);
+    --card:rgba(18,32,44,.66); --shadow:0 14px 34px -14px rgba(0,0,0,.6);
+  }
+  :root[data-list="yulia"]:not([data-theme="light"]){
+    --bg:#110d1d; --ink:#eee8fa; --muted:#aaa0c2; --accent:#df8fd8; --accent-2:#93a0ff; --accent-ink:#1a1026;
+    --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.2);
+    --blob1:#4d2a78; --blob2:#6a2a5e; --blob3:#25397e; --tile-a:#33223f; --tile-b:#232b4c;
+    --glass:rgba(34,26,52,.42); --glass-strong:rgba(38,28,58,.72); --glass-edge:rgba(255,255,255,.14);
+    --card:rgba(32,24,48,.66); --shadow:0 14px 34px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-list]{--surface:var(--glass-strong);--raised:var(--card);--r:20px;--r-sm:13px;--scrim:rgba(10,8,14,.35)}
+
+body{background:var(--bg);min-height:100vh}
+.bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bgfx i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.75}
+.bgfx i:nth-child(1){width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:var(--blob1)}
+.bgfx i:nth-child(2){width:40vmax;height:40vmax;right:-10vmax;top:18vh;background:var(--blob2)}
+.bgfx i:nth-child(3){width:38vmax;height:38vmax;left:20vw;bottom:-18vmax;background:var(--blob3);opacity:.55}
+@media (prefers-reduced-motion:no-preference){
+  .bgfx i{animation:drift 26s ease-in-out infinite alternate}
+  .bgfx i:nth-child(2){animation-duration:32s}.bgfx i:nth-child(3){animation-duration:38s}
+}
+@keyframes drift{to{transform:translate(4vmax,3vmax) scale(1.08)}}
+
+/* стекло */
+.glass,.panel,.toast{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
+  border:1px solid var(--glass-edge);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.08),var(--shadow);
+}
+.topbar{position:sticky;top:max(10px,env(safe-area-inset-top,0px));z-index:30;padding:8px 8px 8px 10px;border-radius:999px;margin:0 0 22px}
+.lists a{border:0;background:transparent;color:var(--muted);padding:8px 14px;transition:background .25s,color .25s}
+.lists a:hover{color:var(--ink)}
+.lists a[aria-current="page"]{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);box-shadow:0 6px 16px -6px var(--accent)}
+.who .lbl{display:none}
+@media (min-width:560px){.who .lbl{display:inline}}
+
+/* сегменты-«капсулы» */
+.seg{border-radius:999px;padding:3px;gap:2px;display:inline-grid}
+.seg button{border:0!important;background:transparent;border-radius:999px;color:var(--muted);transition:background .25s,color .25s,box-shadow .25s}
+.seg button[aria-pressed="true"]{background:var(--glass-strong);color:var(--ink);box-shadow:0 2px 10px -2px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.7)}
+.panel .seg{display:grid;width:100%}
+
+.top{margin-top:4px}
+.top h1{font-size:clamp(26px,5vw,38px);background:linear-gradient(120deg,var(--ink) 30%,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:2px}
+.btn{border-radius:999px;transition:transform .15s,box-shadow .2s,background .2s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border:0;box-shadow:0 8px 20px -8px var(--accent),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn.primary:hover{box-shadow:0 10px 26px -8px var(--accent),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn:not(.primary){background:var(--glass);border-color:var(--glass-edge)}
+
+.stats{border-radius:var(--r);padding:12px 16px;margin:18px 0 16px;gap:6px 26px}
+.stats b{font-size:16px}
+.guest-note{border-radius:var(--r);padding:12px 16px}
+
+.tabs{border-radius:999px;padding:5px;gap:4px;width:max-content;max-width:100%;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;color:var(--muted);transition:background .25s,color .25s}
+.tab[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);box-shadow:0 6px 14px -6px var(--accent)}
+.tab[aria-pressed="true"] span{color:var(--accent-ink)}
+
+.filters{margin:14px 0 10px}
+.filters .fld{border-radius:999px;padding-inline:18px}
+.legend{border-radius:var(--r);padding:2px 14px;margin:6px 0}
+.spoil{margin:8px 4px 0}
+
+.sec-h{margin:36px 0 4px}
+.sec-h h2{font-size:20px}
+.grid{gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))}
+.card{background:var(--card);border:1px solid var(--glass-edge);border-radius:var(--r);box-shadow:var(--shadow);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.card:hover{transform:translateY(-4px);box-shadow:0 22px 40px -18px rgba(0,0,0,.35);border-color:var(--glass-edge)}
+.ph{margin:8px 8px 0;border-radius:14px;background:linear-gradient(135deg,var(--tile-a),var(--tile-b))}
+.ph .ltr,.photo-prev .ltr{color:var(--accent);opacity:.7}
+.photo-prev{background:linear-gradient(135deg,var(--tile-a),var(--tile-b))}
+.cb{padding:12px 14px 14px}
+.card h3{font-size:15.5px}
+.shops a{border-radius:999px;background:var(--glass);border-color:var(--line)}
+.need{border-radius:999px;padding:2px 8px}
+.rsv .tag{border-radius:999px}
+.rsv .tag.mine{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+
+.sheet{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.panel{background:var(--glass-strong);border-radius:28px 28px 0 0}
+@media (min-width:720px){.panel{border-radius:28px}}
+.panel .fld{background:var(--glass);border-color:var(--line)}
+.toast{color:var(--ink);border-radius:999px;padding:12px 20px}
+.empty{background:var(--glass);border-color:var(--line-strong);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass,.panel,.toast{background:var(--glass-strong)}
+}
+
+/* ---------- верх страницы v2 ---------- */
+.hero h1{margin:0;font:600 clamp(28px,5vw,42px)/1.1 var(--font-display);letter-spacing:-.01em;background:linear-gradient(120deg,var(--ink) 25%,var(--accent) 70%,var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:3px}
+:root[data-list="yulia"] .hero h1{font-weight:700}
+.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:20px 28px;margin:14px 0 22px}
+.hero-main{min-width:0}
+.hero .sub{margin:8px 0 0;font-size:14px}
+.hero .stats{background:none;border:0;box-shadow:none;padding:0;margin:6px 0 0;gap:4px 18px;font-size:13px}
+.hero .stats b{font-size:14px;color:var(--accent)}
+.hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}
+.switch{display:inline-flex;align-items:center;gap:2px;padding:4px;border-radius:999px}
+.switch.lists a{padding:6px 14px;font-size:13px}
+.switch.who .lbl{display:inline;padding:0 6px 0 10px;font-size:12.5px;color:var(--muted)}
+.switch .seg{background:none;border:0;box-shadow:none;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.switch.who .seg button{padding:6px 12px;min-height:32px;font-size:13px}
+.hero-side .btn{margin-top:4px}
+.guest-note{background:none;border:0;box-shadow:none;padding:0 2px;margin:-10px 0 16px;font-size:13px;color:var(--muted);-webkit-backdrop-filter:none;backdrop-filter:none}
+.guest-note::before{content:"🎁";margin-right:6px}
+.toolbar{border-radius:24px;padding:8px;display:grid;gap:8px}
+.toolbar .tabs{background:none;border:0;box-shadow:none;padding:0;width:auto;-webkit-backdrop-filter:none;backdrop-filter:none}
+.toolbar .filters{margin:0;gap:6px}
+.toolbar .fld{background:rgba(255,255,255,.28);border:1px solid var(--line);border-radius:999px;min-height:38px;padding:8px 16px;font-size:14.5px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .toolbar .fld{background:rgba(255,255,255,.05)}}
+.filters:has(#fStatus[hidden]) #fSort{grid-column:span 2}
+@media (min-width:720px){
+  .toolbar{grid-template-columns:auto 1fr;align-items:center;padding:6px}
+  .toolbar .filters{grid-template-columns:minmax(120px,1fr) auto auto;justify-self:end;width:min(100%,520px)}
+  .filters:has(#fStatus[hidden]){grid-template-columns:minmax(120px,1fr) auto}
+  .filters:has(#fStatus[hidden]) #fSort{grid-column:auto}
+}
+.aux{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;margin:8px 6px 0}
+.aux .legend{background:none;border:0;box-shadow:none;padding:0;margin:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.aux .spoil{margin:0}
+@media (max-width:640px){
+  .hero{flex-direction:column-reverse;gap:16px;margin-top:6px}
+  .hero-side{flex-direction:row;flex-wrap:wrap;align-items:center;width:100%;justify-content:space-between}
+  .hero-side .btn{margin:0;order:3;width:100%}
+  .switch.who .lbl{display:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .cb{padding:10px 10px 12px}.ph{margin:6px 6px 0}
+}
+
+/* ---------- узоры фона ---------- */
+.bgfx::after{content:"";position:absolute;inset:0;background:var(--pattern-ink);opacity:var(--pattern-op);
+  -webkit-mask-repeat:repeat;mask-repeat:repeat}
+:root[data-list="artem"]{--pattern-ink:#1f5f7a;--pattern-op:.13}
+:root[data-list="yulia"]{--pattern-ink:#6a4fb0;--pattern-op:.11}
+@media (prefers-color-scheme: dark){
+  :root[data-list="artem"]:not([data-theme="light"]){--pattern-ink:#8fd3ea;--pattern-op:.07}
+  :root[data-list="yulia"]:not([data-theme="light"]){--pattern-ink:#d8b8ff;--pattern-op:.08}
+}
+/* Артём: топографические горизонтали */
+:root[data-list="artem"] .bgfx::after{
+  -webkit-mask-image:url("topo-artem.svg");mask-image:url("topo-artem.svg");
+  -webkit-mask-size:640px 640px;mask-size:640px 640px;
+}
+/* Юля: звёздочки-искорки и точки */
+:root[data-list="yulia"] .bgfx::after{
+  -webkit-mask-image:url("cozy-yulia.svg");mask-image:url("cozy-yulia.svg");
+  -webkit-mask-size:360px 360px;mask-size:360px 360px;
+}
+
+/* ---------- углы v3 ---------- */
+.corners{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 0}
+.hero{margin-top:22px}
+.hero-side{justify-content:flex-end;align-self:flex-end}
+.toolbar{display:block;width:max-content;max-width:100%;padding:5px}
+@media (min-width:720px){.toolbar{display:block}}
+@media (max-width:640px){
+  .hero{flex-direction:column;align-items:stretch;gap:14px;margin-top:18px}
+  .hero-side .btn{width:100%}
+  .switch.lists a{padding:6px 11px;font-size:12.5px}
+  .switch.who .seg button{padding:6px 9px;font-size:12.5px}
+}
+
+.linkbtn{border:0;background:none;color:var(--muted);font-size:13px;padding:6px 0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* ---------- варианты ---------- */
+.vbox{border:1px solid var(--line);border-radius:18px;padding:12px;background:rgba(255,255,255,.12)}
+.vbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.vbar legend{float:left;margin-right:4px}
+.vtabs{display:flex;gap:4px;flex-wrap:wrap}
+.vtabs button{border:1px solid var(--line);background:var(--glass);border-radius:999px;min-width:34px;height:32px;padding:0 10px;font-size:13px;font-weight:500;color:var(--muted)}
+.vtabs button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:transparent}
+.vadd{min-height:32px;padding:5px 12px;font-size:13px;margin-left:auto}
+.vdel{min-height:34px;padding:6px 12px;font-size:13px}
+.opt{color:var(--muted);font-size:11.5px}
+.ph{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.vbadge{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:999px;font:500 10.5px var(--font-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);
+  background:var(--glass-strong);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--glass-edge)}
+.vnav{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:1px solid var(--glass-edge);padding:0;
+  background:var(--glass-strong);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:.9}
+.vnav:hover{opacity:1}
+.vnav.prev{left:8px}.vnav.next{right:8px}
+.vdots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.vdots i{width:6px;height:6px;border-radius:50%;background:var(--glass-strong);border:1px solid var(--line-strong)}
+.vdots i.on{background:var(--accent);border-color:var(--accent);width:14px;border-radius:4px}
+.vlabel{margin:-2px 0 0;font-size:12.5px;font-weight:500;color:var(--accent)}
+.ph,.cb .price,.cb .desc,.cb .shops,.vlabel{transition:opacity .18s}
+.card.flip .ph img,.card.flip .ph .ltr{animation:vfade .22s ease}
+@keyframes vfade{from{opacity:.25;transform:translateX(var(--vdir,8px))}to{opacity:1;transform:none}}
+</style>
+
+<div class="bgfx" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="wrap">
+  <div class="corners">
+    <nav class="switch glass lists" id="lists" aria-label="Списки"></nav>
+    <div class="switch glass who" role="group" aria-labelledby="whoLbl"><span class="lbl" id="whoLbl">Я —</span><div class="seg" id="who"></div></div>
+  </div>
+  <header class="hero">
+    <div class="hero-main">
+      <h1 id="h1">Вишлист</h1>
+      <p class="sub" id="sub">Загружаю список…</p>
+      <div class="stats" id="stats" hidden></div>
+    </div>
+    <div class="hero-side">
+      <button type="button" class="btn primary" id="addBtn">+ Добавить</button>
+    </div>
+  </header>
+
+  <p class="guest-note" id="guestNote" hidden>Выберите подарок и нажмите «Я подарю» — другие гости увидят, что он занят, а хозяин списка ничего не узнает.</p>
+
+  <section class="toolbar glass" aria-label="Разделы и фильтры">
+    <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+    <div class="filters" hidden>
+      <input class="fld" id="q" type="search" aria-hidden="true" tabindex="-1">
+      <select class="fld" id="fStatus" aria-hidden="true" tabindex="-1"></select>
+      <select class="fld" id="fSort" aria-hidden="true" tabindex="-1"></select>
+    </div>
+  </section>
+
+  <div class="aux">
+    <details class="legend">
+      <summary>Как читать приоритеты</summary>
+      <ul id="legend"></ul>
+    </details>
+    <button type="button" class="linkbtn" id="chPin" hidden>Сменить PIN</button>
+    <label class="spoil" id="spoilWrap" hidden><input type="checkbox" id="spoil"> Показывать брони (спойлер)</label>
+  </div>
+
+  <p class="note" id="loadNote" hidden></p>
+  <main id="list" aria-live="polite"></main>
+</div>
+
+<div id="sheet" class="sheet" hidden>
+  <form id="form" class="panel" novalidate aria-labelledby="sheetTitle">
+    <div class="panel-h">
+      <h2 id="sheetTitle">Новая карточка</h2>
+      <button type="button" class="x" id="closeBtn" aria-label="Закрыть">×</button>
+    </div>
+
+    <div class="field">
+      <label for="fTitle">Название</label>
+      <input class="fld" id="fTitle" type="text" maxlength="120" autocomplete="off">
+      <p class="err" id="titleErr" hidden>Введите название.</p>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="fSection">Раздел</label><select class="fld" id="fSection"></select></div>
+      <div class="field"><label for="fGroup">Группа</label><input class="fld" id="fGroup" list="groupList" type="text" maxlength="60" autocomplete="off"><datalist id="groupList"></datalist></div>
+    </div>
+    <div class="field" id="newSecField" hidden>
+      <label for="fNewSec">Название нового раздела</label>
+      <input class="fld" id="fNewSec" type="text" maxlength="40" autocomplete="off">
+    </div>
+    <fieldset class="field vbox">
+      <div class="vbar"><legend class="lbl">Варианты</legend><div class="vtabs" id="vTabs"></div><button type="button" class="btn ghost vadd" id="vAdd">+ ещё вариант</button></div>
+    <div class="photo-row">
+      <div class="photo-prev" id="photoPrev"></div>
+      <div class="photo-actions">
+        <button type="button" class="btn" id="photoBtn">Загрузить фото</button>
+        <button type="button" class="btn ghost" id="photoDel" hidden>Убрать</button>
+        <input type="file" id="photoFile" accept="image/*" hidden>
+        <p class="hint" id="photoHint"></p>
+      </div>
+    </div>
+
+      <div class="field" id="vLabelField" hidden><label for="fVLabel">Название варианта <span class="opt">(например, «чёрный» или «Ozon, 2 шт.»)</span></label><input class="fld" id="fVLabel" type="text" maxlength="60" autocomplete="off"></div>
+    <div class="row2">
+      <div class="field"><label for="fPrice">Цена, ₽</label><input class="fld" id="fPrice" type="text" inputmode="decimal" autocomplete="off"></div>
+      <div class="field"><label for="fPriceTo">Цена до, ₽</label><input class="fld" id="fPriceTo" type="text" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <div class="field"><label for="fDesc">Описание</label><textarea class="fld" id="fDesc" rows="3" maxlength="600"></textarea></div>
+    <fieldset class="field"><legend>Где смотреть</legend><div class="links" id="links"></div></fieldset>
+      <button type="button" class="btn danger vdel" id="vDel" hidden>Удалить этот вариант</button>
+    </fieldset>
+    <div class="field"><span class="lbl" id="heartLbl">Как сильно хочется</span><div class="hearts-pick" id="heartPick" role="group" aria-labelledby="heartLbl"></div></div>
+    <div class="field"><span class="lbl" id="needLbl">Нужность</span><div class="seg" id="needSeg" role="group" aria-labelledby="needLbl"></div></div>
+    <div class="field"><label for="fState">Статус</label><select class="fld" id="fState"></select></div>
+
+    <div class="panel-f">
+      <button type="button" class="btn danger" id="delBtn" hidden>Удалить</button>
+      <span class="grow"></span>
+      <button type="button" class="btn ghost" id="cancelBtn">Отмена</button>
+      <button type="submit" class="btn primary" id="saveBtn">Сохранить</button>
+    </div>
+  </form>
+</div>
+<div id="pinSheet" class="sheet" hidden>
+  <form id="pinForm" class="panel pin-panel" novalidate aria-labelledby="pinTitle">
+    <div class="panel-h"><h2 id="pinTitle">Вход</h2><button type="button" class="x" id="pinClose" aria-label="Закрыть">×</button></div>
+    <p id="pinText"></p>
+    <div class="field" id="pinF1"><label for="pin1" id="pin1Lbl">PIN</label><input class="fld" id="pin1" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off"></div>
+    <div class="field" id="pinF2" hidden><label for="pin2">Повторите PIN</label><input class="fld" id="pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off"></div>
+    <p class="err" id="pinErr" hidden></p>
+    <div class="panel-f"><span class="grow"></span><button type="button" class="btn ghost" id="pinCancel">Отмена</button><button type="submit" class="btn primary" id="pinOk">Войти</button></div>
+  </form>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function(){
+  var SECTIONS_DEFAULT=['Снаряжение','Модельки','Дом','Хотелки'];
+  var STATUS=[['idea','Идея'],['watching','Присматриваю'],['chosen','Выбрано'],['ordered','Заказано'],['bought','Куплено']];
+  var DESIRE=['Приоритет не задан','Просто приятно','Хотелось бы','Очень хочу','Давно хочу'];
+  var NEED=['Просто хочу','Нужно, не срочно','Срочно'];
+  var NEED_SHORT=['','нужно','срочно'];
+  var SHOPS=[['ozon','Ozon','Ozon'],['ym','Яндекс Маркет','Я.Маркет'],['wb','Wildberries','WB'],['ali','AliExpress','AliExpress'],['avito','Авито','Авито'],['other','Другое','Ссылка']];
+  var HUES=[92,212,32,285,160,350];
+  var HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+
+  var SB_URL='https://ytegrixdsyzwtohcluvx.supabase.co', SB_KEY='sb_publishable_hy6wvyp57KdUu3lWWLQ3lQ_3LpHjd5y';
+  var LIST=(new URLSearchParams(location.search).get('list')==='yulia')?'yulia':'artem';
+  document.documentElement.setAttribute('data-list',LIST==='yulia'?'yulia':'artem');
+  var PROFILES=[['artem','Артём'],['yulia','Юля'],['guest','Гость']];
+  var profile='guest';
+  try{var sp=localStorage.getItem('wl-profile'); if(PROFILES.some(function(p){return p[0]===sp}))profile=sp;}catch(e){}
+  var role='guest', spoilers=false;
+  var guestToken='';
+  try{guestToken=localStorage.getItem('wl-guest-token')||'';}catch(e){}
+  if(!guestToken){guestToken=Array.from(crypto.getRandomValues(new Uint8Array(16)),function(b){return b.toString(16).padStart(2,'0')}).join(''); try{localStorage.setItem('wl-guest-token',guestToken);}catch(e){}}
+  var db=null, assets=null, items=[], sections=SECTIONS_DEFAULT.slice(), loaded=false, failed='';
+  var ui={tab:'all',status:'active',sort:'important',q:''};
+  try{var saved=JSON.parse(localStorage.getItem('wl-ui-'+LIST)||'{}'); if(saved&&typeof saved==='object'){ if(typeof saved.tab==='string')ui.tab=saved.tab; if(typeof saved.status==='string')ui.status=saved.status; if(typeof saved.sort==='string')ui.sort=saved.sort; }}catch(e){}
+  ui.status='active'; ui.sort='important'; ui.q='';
+  function persist(){try{localStorage.setItem('wl-ui-'+LIST,JSON.stringify({tab:ui.tab,status:ui.status,sort:ui.sort}));}catch(e){}}
+
+  var $=function(id){return document.getElementById(id)};
+  function el(tag,props){
+    var n=document.createElement(tag);
+    if(props)for(var k in props){var v=props[k]; if(v==null||v===false)continue;
+      if(k==='class')n.className=v; else if(k==='text')n.textContent=v;
+      else if(k.indexOf('on')===0)n.addEventListener(k.slice(2),v); else n.setAttribute(k,v===true?'':v);}
+    for(var i=2;i<arguments.length;i++){var c=arguments[i]; if(c==null||c===false)continue;
+      if(Array.isArray(c)){c.forEach(function(x){if(x)n.append(x.nodeType?x:document.createTextNode(x))});}
+      else n.append(c.nodeType?c:document.createTextNode(c));}
+    return n;
+  }
+  function fmt(n){return Number(n).toLocaleString('ru-RU')}
+  function priceText(it){
+    if(typeof it.price!=='number')return null;
+    return (typeof it.priceTo==='number'&&it.priceTo>it.price)?fmt(it.price)+' – '+fmt(it.priceTo)+' ₽':fmt(it.price)+' ₽';
+  }
+  function statusLabel(s){for(var i=0;i<STATUS.length;i++)if(STATUS[i][0]===s)return STATUS[i][1];return 'Идея'}
+  function hueFor(sec){var i=sections.indexOf(sec); return HUES[(i<0?sections.length:i)%HUES.length]}
+  function heartsEl(n){
+    var w=el('span',{class:'hearts',title:DESIRE[n]||DESIRE[0],'aria-label':DESIRE[n]||DESIRE[0],role:'img'});
+    for(var i=1;i<=4;i++){var s=document.createElement('span'); s.className='h'+(i<=n?' on':''); s.innerHTML=HEART; w.append(s);}
+    return w;
+  }
+  function safeUrl(u){try{var x=new URL(u); return (x.protocol==='http:'||x.protocol==='https:')?x.href:null;}catch(e){return null}}
+  var toastTimer=null;
+  function toast(msg){var t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.hidden=true},3400);}
+
+  function sectionList(){
+    var s=sections.slice();
+    items.forEach(function(it){if(it.section&&s.indexOf(it.section)<0)s.push(it.section)});
+    return s;
+  }
+  function matches(it,skipTab){
+    if(!skipTab&&ui.tab!=='all'&&it.section!==ui.tab)return false;
+    if(ui.status==='active'){if(it.status==='bought')return false;}
+    else if(ui.status!=='all'&&(it.status||'idea')!==ui.status)return false;
+    if(ui.q){var s=((it.title||'')+' '+(it.group||'')+' '+(it.desc||'')).toLowerCase(); if(s.indexOf(ui.q.toLowerCase())<0)return false;}
+    return true;
+  }
+  function cmp(a,b){
+    var ab=a.status==='bought'?1:0, bb=b.status==='bought'?1:0; if(ab!==bb)return ab-bb;
+    var pa=typeof a.price==='number'?a.price:null, pb=typeof b.price==='number'?b.price:null;
+    if(ui.sort==='priceAsc'){ if(pa===null&&pb!==null)return 1; if(pb===null&&pa!==null)return -1; if(pa!==pb)return pa-pb; }
+    else if(ui.sort==='priceDesc'){ if(pa===null&&pb!==null)return 1; if(pb===null&&pa!==null)return -1; if(pa!==pb)return pb-pa; }
+    else if(ui.sort==='new'){ return (b.created||0)-(a.created||0); }
+    else if(ui.sort==='az'){ return (a.title||'').localeCompare(b.title||'','ru'); }
+    else {
+      var na=a.need||0, nb=b.need||0; if(na!==nb)return nb-na;
+      var da=a.desire||0, db_=b.desire||0; if(da!==db_)return db_-da;
+    }
+    return (a.created||0)-(b.created||0);
+  }
+
+  function renderStats(){
+    var box=$('stats'); box.textContent='';
+    if(!loaded||!items.length){box.hidden=true;return;}
+    var open=items.filter(function(i){return i.status!=='bought'});
+    var priced=open.filter(function(i){return typeof i.price==='number'});
+    var sum=priced.reduce(function(s,i){return s+i.price},0);
+    var urgent=open.filter(function(i){return i.need===2}).length;
+    function stat(v,l){return el('span',null,el('b',{text:v}),l)}
+    box.append(stat(String(open.length),'в списке'));
+    if(urgent)box.append(stat(String(urgent),'срочно'));
+    if(priced.length)box.append(stat('≈ '+fmt(sum)+' ₽','по '+priced.length+' из '+open.length+' с указанной ценой'));
+    box.hidden=false;
+  }
+  function renderTabs(){
+    var nav=$('tabs'); nav.textContent='';
+    var secs=sectionList();
+    if(ui.tab!=='all'&&secs.indexOf(ui.tab)<0)ui.tab='all';
+    var all=items.filter(function(i){return matches(i,true)});
+    function tab(key,label,n){
+      nav.append(el('button',{type:'button',class:'tab','aria-pressed':String(ui.tab===key),onclick:function(){ui.tab=key;persist();render();}},label,el('span',{text:String(n)})));
+    }
+    tab('all','Все',all.length);
+    secs.forEach(function(s){tab(s,s,all.filter(function(i){return i.section===s}).length)});
+  }
+  function variantsOf(it){
+    var base={label:it.variantLabel||'',photo:it.photo||'',price:it.price,priceTo:it.priceTo,desc:it.desc||'',links:it.links||{}};
+    return [base].concat(Array.isArray(it.variants)?it.variants.filter(function(v){return v&&typeof v==='object'}):[]);
+  }
+  var cardVi={};
+  function card(it,dir){
+    var vars=variantsOf(it), vi=Math.min(cardVi[it.id]||0,vars.length-1), v=vars[vi], multi=vars.length>1;
+    var n=el('article',{class:'card'+(it.status==='bought'?' is-bought':'')+(dir?' flip':''),tabindex:'0',role:'button','aria-label':'Открыть карточку: '+(it.title||'')});
+    if(dir)n.style.setProperty('--vdir',dir>0?'10px':'-10px');
+    function go(d,e){ if(e)e.stopPropagation(); cardVi[it.id]=(vi+d+vars.length)%vars.length; var nn=card(it,d); n.replaceWith(nn); var b=nn.querySelector(d>0?'.vnav.next':'.vnav.prev'); if(b&&e&&e.detail===0)b.focus(); }
+    var ph=el('div',{class:'ph'}); ph.style.setProperty('--h',String(hueFor(it.section)));
+    if(v.photo){
+      var img=el('img',{src:photoUrl(v.photo),alt:'',loading:'lazy',draggable:'false'});
+      img.addEventListener('error',function(){ph.textContent='';ph.append(el('span',{class:'ltr',text:(it.title||'?').charAt(0).toUpperCase()}))});
+      ph.append(img);
+    } else ph.append(el('span',{class:'ltr',text:(it.title||'?').charAt(0).toUpperCase()}));
+    if(multi){
+      ph.append(el('span',{class:'vbadge',text:'несколько вариантов · '+(vi+1)+'/'+vars.length}));
+      ph.append(el('button',{type:'button',class:'vnav prev','aria-label':'Предыдущий вариант',onclick:function(e){go(-1,e)}},'‹'));
+      ph.append(el('button',{type:'button',class:'vnav next','aria-label':'Следующий вариант',onclick:function(e){go(1,e)}},'›'));
+      var dots=el('div',{class:'vdots','aria-hidden':'true'}); vars.forEach(function(_,k){dots.append(el('i',{class:k===vi?'on':null}))}); ph.append(dots);
+      var sx=null;
+      ph.addEventListener('pointerdown',function(e){sx=e.clientX});
+      ph.addEventListener('pointerup',function(e){ if(sx===null)return; var dx=e.clientX-sx; sx=null; if(Math.abs(dx)>35){ n.dataset.swiped='1'; go(dx<0?1:-1); } });
+    }
+    var body=el('div',{class:'cb'});
+    body.append(el('div',{class:'mrow'},heartsEl(it.desire||0),(it.need?el('span',{class:'need n'+it.need,text:NEED_SHORT[it.need]}):null)));
+    body.append(el('h3',{text:it.title||'Без названия'}));
+    if(multi)body.append(el('p',{class:'vlabel',text:v.label||('Вариант '+(vi+1))}));
+    var pt=priceText(v);
+    body.append(el('p',{class:'price'+(pt?'':' none'),text:pt||'цена не указана'}));
+    if(v.desc)body.append(el('p',{class:'desc',text:v.desc}));
+    var links=v.links||{}, shops=[];
+    SHOPS.forEach(function(s){var u=links[s[0]]?safeUrl(links[s[0]]):null; if(u)shops.push(el('a',{href:u,target:'_blank',rel:'noopener noreferrer',onclick:function(e){e.stopPropagation()}},s[2]));});
+    if(shops.length)body.append(el('div',{class:'shops'},shops));
+    var stt=it.status||'idea';
+    if(role==='owner')body.append(el('span',{class:'stt '+stt},el('i'),statusLabel(stt)));
+    var rv=reserveEl(it); if(rv)body.append(rv);
+    if(role==='guest'&&it.reserved&&!it.mine)n.classList.add('is-reserved');
+    n.append(ph,body);
+    if(role==='owner'){
+      n.addEventListener('click',function(){ if(n.dataset.swiped){delete n.dataset.swiped;return;} openEditor(it,vi)});
+      n.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target===n){e.preventDefault();openEditor(it,vi)}});
+    } else { n.removeAttribute('role'); n.removeAttribute('tabindex'); n.removeAttribute('aria-label'); n.style.cursor='default'; }
+    return n;
+  }
+  function reserveEl(it){
+    function stop(e){e.stopPropagation()}
+    if(role==='owner'){
+      if(!spoilers||!it.reserved)return null;
+      return el('div',{class:'rsv'},el('span',{class:'tag taken',text:'забронировано'}),
+        el('button',{type:'button',class:'undo',onclick:function(e){stop(e);unreserve(it,true)}},'снять бронь'));
+    }
+    if(it.mine)return el('div',{class:'rsv'},el('span',{class:'tag mine',text:'вы дарите это'}),
+      el('button',{type:'button',class:'undo',onclick:function(e){stop(e);unreserve(it,false)}},'отменить бронь'));
+    if(it.reserved)return el('div',{class:'rsv'},el('span',{class:'tag taken',text:'уже кто-то дарит'}));
+    return el('div',{class:'rsv'},el('button',{type:'button',class:'btn primary',onclick:function(e){stop(e);reserve(it,e.currentTarget)}},'Я подарю'));
+  }
+  async function reserve(it,btn){
+    if(btn)btn.disabled=true;
+    try{await rpc('wl_reserve',{p_list:LIST,p_item:it.id,p_guest:guestToken,p_token:authToken(profile)}); await refresh(); toast('Забронировано за вами. Отменить можно на этой же карточке.');}
+    catch(e){ if(e.message==='taken'){toast('Этот подарок только что забронировал кто-то другой.');} else toast('Не получилось забронировать. Попробуйте ещё раз.'); try{await refresh();}catch(x){} }
+  }
+  async function unreserve(it,asOwner){
+    if(asOwner&&!confirm('Снять бронь с «'+(it.title||'')+'»? Гость, который его забронировал, об этом не узнает.'))return;
+    try{await rpc('wl_unreserve',{p_list:LIST,p_item:it.id,p_guest:guestToken,p_token:authToken(profile)}); await refresh(); toast('Бронь снята');}
+    catch(e){toast('Не получилось снять бронь.');}
+  }
+  function renderList(){
+    var host=$('list'); host.textContent='';
+    if(failed){host.append(el('div',{class:'empty'},el('b',{text:'Список недоступен'}),failed));return;}
+    if(!loaded){host.append(el('div',{class:'empty'},el('b',{text:'Загружаю список'}),'Карточки появятся через секунду.'));return;}
+    if(!items.length){host.append(el('div',{class:'empty'},el('b',{text:'Пока ничего нет'}),(role==='owner'?'Нажмите «Добавить», чтобы создать первую карточку.':'В этом списке пока ничего нет — загляните позже.')));return;}
+    var shown=items.filter(function(i){return matches(i,false)}).sort(cmp);
+    if(!shown.length){host.append(el('div',{class:'empty'},el('b',{text:'Ничего не найдено'}),'Измените поиск или фильтр статуса.'));return;}
+    var secs=sectionList().filter(function(s){return shown.some(function(i){return i.section===s})});
+    secs.forEach(function(s){
+      var inSec=shown.filter(function(i){return i.section===s});
+      if(ui.tab==='all'){
+        var priced=inSec.filter(function(i){return i.status!=='bought'&&typeof i.price==='number'});
+        var sum=priced.reduce(function(a,i){return a+i.price},0);
+        host.append(el('div',{class:'sec-h'},el('h2',{text:s}),el('span',{class:'n',text:inSec.length+' шт.'+(priced.length?' · ≈ '+fmt(sum)+' ₽':'')})));
+      }
+      var order=[]; inSec.forEach(function(i){var g=i.group||''; if(order.indexOf(g)<0)order.push(g)});
+      var grouped=order.some(function(g){return g!==''});
+      order.forEach(function(g){
+        var arr=inSec.filter(function(i){return (i.group||'')===g});
+        if(grouped)host.append(el('div',{class:'grp-h'},el('span',{text:g||'Прочее'}),el('span',{text:String(arr.length)}),el('span',{class:'line'})));
+        host.append(el('div',{class:'grid'},arr.map(card)));
+      });
+    });
+  }
+  function renderSub(){
+    $('sub').textContent=failed?'Нет связи с базой':(!loaded?'Загружаю список…':(items.length?(items.length+' позиций, '+sectionList().length+' раздела'.replace('раздела',sectionList().length>=5?'разделов':(sectionList().length===1?'раздел':'раздела'))):'Список пуст'));
+  }
+  var listsMeta=[], listTitle='Вишлист';
+  function renderHead(){
+    $('h1').textContent=listTitle; document.title=listTitle;
+    var nav=$('lists'); nav.textContent='';
+    listsMeta.forEach(function(l){nav.append(el('a',{href:'?list='+l.id,'aria-current':l.id===LIST?'page':null},l.title.replace('Вишлист ','')))});
+    nav.hidden=listsMeta.length<2;
+    var who=$('who'); who.textContent='';
+    PROFILES.forEach(function(p){who.append(el('button',{type:'button','aria-pressed':String(p[0]===profile),onclick:function(){setProfile(p[0])}},p[1]))});
+    var g=role==='guest';
+    $('addBtn').hidden=g; $('chPin').hidden=g; $('guestNote').hidden=!g; $('spoilWrap').hidden=g;
+    $('fStatus').hidden=g;
+  }
+  function authToken(p){try{return localStorage.getItem('wl-auth-'+p)||'';}catch(e){return ''}}
+  var pinState={profile:null,mode:'enter'};
+  function closePin(){$('pinSheet').hidden=true;}
+  function openPinSheet(mode,p){
+    var name=PROFILES.filter(function(x){return x[0]===p})[0][1];
+    pinState.profile=p; pinState.mode=mode;
+    $('pinTitle').textContent=mode==='change'?'Новый PIN для «'+name+'»':'Профиль «'+name+'»';
+    $('pinText').textContent=mode==='change'?'Придумайте новый PIN: от 4 до 8 цифр. На других устройствах нужно будет войти заново.':'Введите PIN, чтобы редактировать свой список.';
+    $('pinF1').hidden=false; $('pinF2').hidden=mode!=='change';
+    $('pin1Lbl').textContent=mode==='change'?'Новый PIN':'PIN';
+    $('pinOk').hidden=false; $('pinOk').textContent=mode==='change'?'Сохранить':'Войти';
+    $('pin1').value=''; $('pin2').value=''; $('pinErr').hidden=true;
+    $('pinSheet').hidden=false; setTimeout(function(){$('pin1').focus()},30);
+  }
+  function askPin(p){openPinSheet('enter',p)}
+  async function submitPin(){
+    var pin=$('pin1').value.trim(), err=$('pinErr');
+    function bad(t){err.textContent=t;err.hidden=false;}
+    if(!/^\d{4,8}$/.test(pin))return bad('PIN — от 4 до 8 цифр.');
+    if(pinState.mode==='change'&&pin!==$('pin2').value.trim())return bad('PIN-коды не совпадают.');
+    $('pinOk').disabled=true;
+    try{
+      if(pinState.mode==='change'){
+        await rpc('wl_change_pin',{p_token:authToken(profile),p_new:pin});
+        closePin(); toast('PIN изменён'); return;
+      }
+      var token=await rpc('wl_login',{p_profile:pinState.profile,p_pin:pin});
+      if(!token){bad('Неверный PIN.');$('pin1').value='';$('pin1').focus();return;}
+      try{localStorage.setItem('wl-auth-'+pinState.profile,token);}catch(e){}
+      closePin();
+      await applyProfile(pinState.profile);
+    }catch(e){
+      var m=e.message||'';
+      if(m.indexOf('locked:')===0)bad('Слишком много попыток. Подождите '+Math.ceil(Number(m.slice(7))/60)+' мин.');
+      else if(m==='read_only')bad('Сначала войдите в свой профиль.');
+      else bad(m.indexOf('http_')===0||m==='Failed to fetch'?'Нет связи с сервером.':'Не получилось: '+m);
+    }
+    finally{$('pinOk').disabled=false;}
+  }
+  (function initPin(){
+    $('chPin').addEventListener('click',function(){openPinSheet('change',profile)});
+    $('pinForm').addEventListener('submit',function(e){e.preventDefault();submitPin();});
+    $('pinClose').addEventListener('click',closePin); $('pinCancel').addEventListener('click',closePin);
+    $('pinSheet').addEventListener('click',function(e){if(e.target===$('pinSheet'))closePin()});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('pinSheet').hidden)closePin()});
+  })();
+  async function setProfile(p){
+    if(p===profile)return;
+    if(p!=='guest'&&!authToken(p))return askPin(p);
+    var ok=await applyProfile(p);
+    if(!ok){try{localStorage.removeItem('wl-auth-'+p);}catch(e){} askPin(p);}
+  }
+  async function applyProfile(p){
+    var prev=profile;
+    profile=p; try{localStorage.setItem('wl-profile',p);}catch(e){}
+    if(!$('sheet').hidden)closeEditor();
+    try{await refresh();}catch(e){}
+    db=role==='owner'?localDb():null;
+    if(p!=='guest'&&lastProfile!==p){ profile=prev; try{localStorage.setItem('wl-profile',prev);}catch(e){} try{await refresh();}catch(e){} db=role==='owner'?localDb():null; return false; }
+    toast(role==='owner'?'Это ваш список — можно редактировать':'Чужой список — можно забронировать подарок');
+    return true;
+  }
+  function render(){renderHead();renderSub();renderStats();renderTabs();renderList();}
+
+  /* фильтры */
+  (function initFilters(){
+    var fs=$('fStatus'); fs.append(el('option',{value:'active',text:'Не куплено'}),el('option',{value:'all',text:'Все статусы'}));
+    STATUS.forEach(function(s){fs.append(el('option',{value:s[0],text:s[1]}))});
+    fs.value=ui.status; if(fs.value!==ui.status){ui.status='active';fs.value='active'}
+    fs.addEventListener('change',function(){ui.status=fs.value;persist();render();});
+    var so=$('fSort');
+    [['important','Сначала важное'],['priceAsc','Цена по возрастанию'],['priceDesc','Цена по убыванию'],['new','Сначала новые'],['az','По алфавиту']].forEach(function(o){so.append(el('option',{value:o[0],text:o[1]}))});
+    so.value=ui.sort; if(so.value!==ui.sort){ui.sort='important';so.value='important'}
+    so.addEventListener('change',function(){ui.sort=so.value;persist();render();});
+    $('q').addEventListener('input',function(e){ui.q=e.target.value.trim();render();});
+    try{spoilers=localStorage.getItem('wl-spoilers')==='1';}catch(e){}
+    $('spoil').checked=spoilers;
+    $('spoil').addEventListener('change',function(){spoilers=$('spoil').checked;try{localStorage.setItem('wl-spoilers',spoilers?'1':'0');}catch(e){}render();});
+    var lg=$('legend');
+    for(var i=1;i<=4;i++)lg.append(el('li',null,heartsEl(i),DESIRE[i]));
+    lg.append(el('li',null,el('span',{class:'need n1',text:'нужно'}),'Нужно, но не срочно'));
+    lg.append(el('li',null,el('span',{class:'need n2',text:'срочно'}),'Срочно'));
+  })();
+
+  /* редактор */
+  var form={id:null,photo:'',desire:0,need:0,uploading:false,armed:false,armTimer:null};
+  function setHearts(n){
+    form.desire=n;
+    Array.prototype.forEach.call($('heartPick').querySelectorAll('.hp'),function(b,i){b.classList.toggle('on',i<n);b.setAttribute('aria-pressed',String(i+1===n));});
+    $('hpLabel').textContent=DESIRE[n];
+  }
+  function setNeed(n){
+    form.need=n;
+    Array.prototype.forEach.call($('needSeg').querySelectorAll('button'),function(b,i){b.setAttribute('aria-pressed',String(i===n))});
+  }
+  function drawPhoto(title,section){
+    var p=$('photoPrev'); p.textContent=''; p.style.setProperty('--h',String(hueFor(section)));
+    if(form.photo){
+      var img=el('img',{src:photoUrl(form.photo),alt:''});
+      img.addEventListener('error',function(){p.textContent='';p.append(el('span',{class:'ltr',text:'?'}))});
+      p.append(img);
+    } else p.append(el('span',{class:'ltr',text:(title||'?').charAt(0).toUpperCase()}));
+    $('photoDel').hidden=!form.photo;
+    $('photoBtn').textContent=form.photo?'Заменить фото':'Загрузить фото';
+  }
+  function fillGroups(){
+    var sec=currentSection(); var dl=$('groupList'); dl.textContent=''; var seen={};
+    items.forEach(function(i){if(i.section===sec&&i.group&&!seen[i.group]){seen[i.group]=1;dl.append(el('option',{value:i.group}))}});
+  }
+  function fillSections(selected){
+    var s=$('fSection'); s.textContent='';
+    sectionList().forEach(function(n){s.append(el('option',{value:n,text:n}))});
+    s.append(el('option',{value:'__new',text:'+ Новый раздел…'}));
+    s.value=selected||sectionList()[0];
+  }
+  function currentSection(){
+    var v=$('fSection').value;
+    if(v==='__new')return $('fNewSec').value.trim();
+    return v;
+  }
+  function priceStr(n){return typeof n==='number'?String(n):''}
+  function readVar(){
+    var l={}; SHOPS.forEach(function(s){l[s[0]]=$('lk_'+s[0]).value.trim()});
+    form.vars[form.vi]={label:$('fVLabel').value.trim(),photo:form.photo||'',price:$('fPrice').value,priceTo:$('fPriceTo').value,desc:$('fDesc').value,links:l};
+  }
+  function loadVar(i){
+    form.vi=i; var v=form.vars[i];
+    $('fVLabel').value=v.label||''; $('fPrice').value=v.price||''; $('fPriceTo').value=v.priceTo||''; $('fDesc').value=v.desc||'';
+    SHOPS.forEach(function(s){$('lk_'+s[0]).value=(v.links||{})[s[0]]||''});
+    form.photo=v.photo||''; drawPhoto($('fTitle').value,currentSection()); renderVarTabs();
+  }
+  function renderVarTabs(){
+    var box=$('vTabs'); box.textContent=''; var multi=form.vars.length>1;
+    if(multi)form.vars.forEach(function(v,i){box.append(el('button',{type:'button','aria-pressed':String(i===form.vi),title:v.label||null,onclick:function(){readVar();loadVar(i)}},String(i+1)))});
+    $('vLabelField').hidden=!multi; $('vDel').hidden=!multi;
+    $('vAdd').disabled=form.vars.length>=8;
+  }
+  function openEditor(it,startVi){
+    var isNew=!it;
+    var d=it||{};
+    form.vars=variantsOf(d).map(function(v){return {label:v.label||'',photo:v.photo||'',price:priceStr(v.price),priceTo:priceStr(v.priceTo),desc:v.desc||'',links:Object.assign({},v.links||{})}});
+    form.vi=0;
+    form.id=it?it.id:null; form.photo=d.photo||''; form.uploading=false; form.armed=false; clearTimeout(form.armTimer);
+    $('sheetTitle').textContent=isNew?'Новая карточка':'Карточка';
+    $('titleErr').hidden=true;
+    $('fTitle').value=d.title||'';
+    fillSections(d.section||(ui.tab!=='all'?ui.tab:sectionList()[0]));
+    $('newSecField').hidden=true; $('fNewSec').value='';
+    $('fGroup').value=d.group||'';
+    $('fPrice').value=typeof d.price==='number'?String(d.price):'';
+    $('fPriceTo').value=typeof d.priceTo==='number'?String(d.priceTo):'';
+    $('fDesc').value=d.desc||'';
+    var l=d.links||{};
+    SHOPS.forEach(function(s){$('lk_'+s[0]).value=l[s[0]]||''});
+    setHearts(d.desire||0); setNeed(d.need||0);
+    $('fState').value=d.status||'idea';
+    $('delBtn').hidden=isNew; $('delBtn').textContent='Удалить'; $('delBtn').classList.remove('armed');
+    $('saveBtn').disabled=false; $('saveBtn').textContent='Сохранить';
+    $('photoBtn').hidden=!assets;
+    $('photoHint').textContent=assets?'':'Сервер вишлиста не запущен.';
+    fillGroups(); loadVar(Math.min(startVi||0,form.vars.length-1));
+    $('sheet').hidden=false; document.body.style.overflow='hidden';
+    setTimeout(function(){if(isNew)$('fTitle').focus()},30);
+  }
+  function closeEditor(){$('sheet').hidden=true; document.body.style.overflow='';}
+
+  (function initForm(){
+    var links=$('links');
+    SHOPS.forEach(function(s){links.append(el('label',{for:'lk_'+s[0]},s[1],el('input',{class:'fld',id:'lk_'+s[0],type:'url',inputmode:'url',placeholder:'https://…',autocomplete:'off'})))});
+    var hp=$('heartPick');
+    for(var i=1;i<=4;i++)(function(n){hp.append(el('button',{type:'button',class:'hp','aria-label':DESIRE[n],title:DESIRE[n],onclick:function(){setHearts(form.desire===n?0:n)}},(function(){var s=document.createElement('span');s.innerHTML=HEART;return s.firstChild})()))})(i);
+    hp.append(el('span',{class:'hp-label',id:'hpLabel',text:DESIRE[0]}));
+    var seg=$('needSeg');
+    NEED.forEach(function(t,i){seg.append(el('button',{type:'button',onclick:function(){setNeed(i)}},t))});
+    var st=$('fState'); STATUS.forEach(function(s){st.append(el('option',{value:s[0],text:s[1]}))});
+    $('fSection').addEventListener('change',function(){
+      var isNew=$('fSection').value==='__new'; $('newSecField').hidden=!isNew; if(isNew)$('fNewSec').focus(); fillGroups(); drawPhoto($('fTitle').value,currentSection());
+    });
+    $('fTitle').addEventListener('input',function(){$('titleErr').hidden=true; if(!form.photo)drawPhoto($('fTitle').value,currentSection());});
+    $('closeBtn').addEventListener('click',closeEditor);
+    $('cancelBtn').addEventListener('click',closeEditor);
+    $('sheet').addEventListener('click',function(e){if(e.target===$('sheet'))closeEditor()});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('sheet').hidden)closeEditor()});
+    $('addBtn').addEventListener('click',function(){if(!db){toast('Сервер вишлиста не запущен.');return;} openEditor(null)});
+    $('photoBtn').addEventListener('click',function(){$('photoFile').click()});
+    $('photoDel').addEventListener('click',function(){form.photo='';drawPhoto($('fTitle').value,currentSection());});
+    $('photoFile').addEventListener('change',onPhoto);
+    $('vAdd').addEventListener('click',function(){
+      readVar(); var cur=form.vars[form.vi];
+      form.vars.push({label:'',photo:'',price:'',priceTo:'',desc:'',links:{}});
+      loadVar(form.vars.length-1); $('fVLabel').focus();
+    });
+    $('vDel').addEventListener('click',function(){
+      if(form.vars.length<2)return;
+      form.vars.splice(form.vi,1); loadVar(Math.max(0,form.vi-1));
+    });
+    $('delBtn').addEventListener('click',onDelete);
+    $('form').addEventListener('submit',function(e){e.preventDefault();save();});
+  })();
+
+  async function shrink(file){
+    try{
+      var bmp=await createImageBitmap(file);
+      var k=Math.min(1,1100/Math.max(bmp.width,bmp.height));
+      var c=document.createElement('canvas'); c.width=Math.max(1,Math.round(bmp.width*k)); c.height=Math.max(1,Math.round(bmp.height*k));
+      c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+      var blob=await new Promise(function(r){c.toBlob(r,'image/jpeg',0.86)});
+      if(blob)return blob;
+    }catch(e){}
+    return file;
+  }
+  async function onPhoto(e){
+    var f=e.target.files&&e.target.files[0]; e.target.value='';
+    if(!f||!assets)return;
+    form.uploading=true; $('photoBtn').disabled=true; $('saveBtn').disabled=true; $('photoHint').textContent='Загружаю фото…';
+    try{
+      var blob=await shrink(f);
+      var res=await assets.upload(blob,blob.type?{type:blob.type}:undefined);
+      form.photo=res.id; $('photoHint').textContent='';
+      drawPhoto($('fTitle').value,currentSection());
+    }catch(err){
+      var code=err&&err.code;
+      $('photoHint').textContent=code==='unsupported_type'?'Этот формат не подходит. Нужен JPEG, PNG или WebP.':(code==='too_large'?'Файл слишком большой.':(code==='quota_or_state'?'Хранилище фото заполнено.':'Не удалось загрузить фото. Попробуйте ещё раз.'));
+    }finally{
+      form.uploading=false; $('photoBtn').disabled=false; $('saveBtn').disabled=false;
+    }
+  }
+  function num(v){
+    var s=String(v||'').replace(/\s+/g,'').replace(',','.'); if(!s)return null;
+    var n=Number(s); return (isFinite(n)&&n>=0)?Math.round(n*100)/100:NaN;
+  }
+  async function save(){
+    var title=$('fTitle').value.trim();
+    if(!title){$('titleErr').hidden=false;$('fTitle').focus();return;}
+    readVar();
+    var out=[];
+    for(var vi=0;vi<form.vars.length;vi++){
+      var v=form.vars[vi], where=form.vars.length>1?' (вариант '+(vi+1)+')':'';
+      var price=num(v.price), priceTo=num(v.priceTo);
+      if(Number.isNaN(price)||Number.isNaN(priceTo)){loadVar(vi);toast('Цена'+where+': введите число.');return;}
+      var links={};
+      for(var i=0;i<SHOPS.length;i++){
+        var k=SHOPS[i][0], raw=(v.links[k]||'').trim();
+        if(raw&&!/^https?:\/\//i.test(raw))raw='https://'+raw;
+        if(raw&&!safeUrl(raw)){loadVar(vi);toast('Проверьте ссылку: '+SHOPS[i][1]+where);$('lk_'+k).focus();return;}
+        links[k]=raw;
+      }
+      var o={label:v.label,photo:v.photo||'',desc:(v.desc||'').trim(),links:links};
+      if(price!==null)o.price=price; if(priceTo!==null&&price!==null&&priceTo>price)o.priceTo=priceTo;
+      out.push(o);
+    }
+    var section=currentSection();
+    if(!section){toast('Введите название раздела.');$('fNewSec').focus();return;}
+    var base=out[0];
+    var doc={title:title,section:section,group:$('fGroup').value.trim(),desc:base.desc,links:base.links,
+      desire:form.desire,need:form.need,status:$('fState').value,photo:base.photo};
+    if(typeof base.price==='number')doc.price=base.price; if(typeof base.priceTo==='number')doc.priceTo=base.priceTo;
+    if(out.length>1){doc.variantLabel=base.label; doc.variants=out.slice(1);}
+    var prev=form.id?items.filter(function(x){return x.id===form.id})[0]:null;
+    doc.created=prev&&prev.created?prev.created:Date.now();
+    $('saveBtn').disabled=true; $('saveBtn').textContent='Сохраняю…';
+    try{
+      if(sectionList().indexOf(section)<0||sections.indexOf(section)<0){
+        await db.doc('meta/sections').set({list:sections.concat(section).filter(function(v,i,a){return a.indexOf(v)===i})});
+      }
+      var ref=form.id?db.collection('wishlist').doc(form.id):db.collection('wishlist').doc();
+      await ref.set(doc);
+      closeEditor(); toast(form.id?'Сохранено':'Карточка добавлена');
+    }catch(err){
+      $('saveBtn').disabled=false; $('saveBtn').textContent='Сохранить';
+      toast('Не удалось сохранить. Проверьте связь и попробуйте ещё раз.');
+    }
+  }
+  async function onDelete(){
+    var b=$('delBtn');
+    if(!form.armed){form.armed=true;b.textContent='Точно удалить?';b.classList.add('armed');clearTimeout(form.armTimer);form.armTimer=setTimeout(function(){form.armed=false;b.textContent='Удалить';b.classList.remove('armed')},3500);return;}
+    clearTimeout(form.armTimer); b.disabled=true;
+    try{await db.collection('wishlist').doc(form.id).delete(); closeEditor(); toast('Карточка удалена');}
+    catch(err){toast('Не удалось удалить.');}
+    finally{b.disabled=false; form.armed=false;}
+  }
+
+  /* хранилище: Supabase (функции базы wl_*, фото в бакете photos) */
+  async function rpc(fn,args){
+    var r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(args||{})});
+    var txt=await r.text(), j=null; try{j=txt?JSON.parse(txt):null;}catch(e){}
+    if(!r.ok){ var e=new Error((j&&j.message)||('http_'+r.status)); throw e; }
+    return j;
+  }
+  function photoUrl(id){return SB_URL+'/storage/v1/object/public/photos/'+encodeURIComponent(id)}
+  async function uploadPhoto(blob){
+    var type=blob.type||'image/jpeg', ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[type];
+    if(!ext){var e=new Error('unsupported_type');e.code='unsupported_type';throw e;}
+    if(blob.size>5*1024*1024){var e2=new Error('too_large');e2.code='too_large';throw e2;}
+    var name=Array.from(crypto.getRandomValues(new Uint8Array(10)),function(b){return b.toString(16).padStart(2,'0')}).join('')+'.'+ext;
+    var r=await fetch(SB_URL+'/storage/v1/object/photos/'+name,{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':type,'x-upsert':'false'},body:blob});
+    if(!r.ok)throw new Error('upload_'+r.status);
+    return {id:name};
+  }
+  var lastRev=0, lastProfile='guest';
+  async function refresh(){
+    var st=await rpc('wl_state',{p_list:LIST,p_token:authToken(profile),p_guest:guestToken});
+    lastProfile=st.profile||'guest';
+    if(profile!=='guest'&&lastProfile!==profile){ try{localStorage.removeItem('wl-auth-'+profile);localStorage.setItem('wl-profile','guest');}catch(e){} profile='guest'; }
+    lastRev=st.rev; role=st.role==='guest'?'guest':'owner'; listsMeta=st.lists||[]; listTitle=(st.list&&st.list.title)||'Вишлист';
+    ui.status=role==='owner'?'all':'active';
+    items=Array.isArray(st.items)?st.items:[];
+    if(Array.isArray(st.sections)&&st.sections.length)sections=st.sections.filter(function(v){return typeof v==='string'&&v});
+    loaded=true; failed=''; $('loadNote').hidden=true; render();
+  }
+  function localDb(){
+    function ref(id){return {
+      set:async function(doc){ await rpc('wl_save_item',{p_token:authToken(profile),p_list:LIST,p_id:id||'',p_doc:doc}); await refresh(); },
+      delete:async function(){ await rpc('wl_delete_item',{p_token:authToken(profile),p_list:LIST,p_id:id}); await refresh(); }
+    };}
+    return {
+      collection:function(){return {doc:function(id){return ref(id||null)}}},
+      doc:function(){return {set:async function(d){await rpc('wl_set_sections',{p_token:authToken(profile),p_list:LIST,p_sections:d.list});}}}
+    };
+  }
+  async function boot(){
+    render();
+    assets={upload:uploadPhoto};
+    try{ await refresh(); db=role==='owner'?localDb():null; }
+    catch(e){ failed='Список сейчас недоступен. Проверьте интернет и обновите страницу.'; render(); }
+    // подхватываем изменения, сделанные на других устройствах
+    setInterval(async function(){
+      if(!$('sheet').hidden||!$('pinSheet').hidden||document.hidden)return;
+      try{ var rv=await rpc('wl_rev',{}); if(rv!==lastRev||failed){ await refresh(); db=role==='owner'?localDb():null; } }
+      catch(e){ if(!failed){failed='Нет связи с базой. Проверьте интернет.';render();} }
+    },5000);
+  }
+  boot();
+})();
+</script>
+
+</body></html>

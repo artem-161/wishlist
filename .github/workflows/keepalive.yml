@@ -1,0 +1,28 @@
+# Раз в два дня обращается к базе Supabase, чтобы бесплатный проект не уходил в паузу.
+# Раз в месяц делает пустой коммит, чтобы GitHub не отключил это расписание (он отключает его после 60 дней без активности).
+name: keepalive
+on:
+  schedule:
+    - cron: "17 6 */2 * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -fsS -X POST "https://ytegrixdsyzwtohcluvx.supabase.co/rest/v1/rpc/wl_rev" \
+            -H "apikey: sb_publishable_hy6wvyp57KdUu3lWWLQ3lQ_3LpHjd5y" \
+            -H "Content-Type: application/json" -d '{}'
+      - uses: actions/checkout@v4
+      - name: Monthly heartbeat commit
+        run: |
+          if [ "$(date +%d)" -le 2 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            date -u +%Y-%m-%dT%H:%MZ > .heartbeat
+            git config user.name "keepalive-bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .heartbeat
+            git commit -m "keepalive" && git push || true
+          fi
