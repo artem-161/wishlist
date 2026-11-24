@@ -358,6 +358,12 @@ body{background:var(--bg);min-height:100vh}
 }
 
 .linkbtn{border:0;background:none;color:var(--muted);font-size:13px;padding:6px 0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* ---------- личные карточки ---------- */
+.priv{display:inline-flex;align-items:center;gap:4px;font:500 10.5px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;
+  padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.card.is-private{border-style:dashed;border-color:var(--line-strong)}
+.priv-hint{margin:6px 0 0;font-size:12px;color:var(--muted)}
+#privSeg{grid-template-columns:1fr 1fr}
 /* ---------- просмотр карточки ---------- */
 .view-panel{width:min(100%,640px);padding:0;overflow:hidden auto}
 .vw-photo{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--tile-a),var(--tile-b));display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
@@ -448,6 +454,7 @@ body{background:var(--bg);min-height:100vh}
       <ul id="legend"></ul>
     </details>
     <button type="button" class="linkbtn" id="chPin" hidden>Сменить PIN</button>
+    <button type="button" class="linkbtn" id="backupBtn" hidden>Скачать копию списка</button>
     <label class="spoil" id="spoilWrap" hidden><input type="checkbox" id="spoil"> Показывать брони (спойлер)</label>
   </div>
 
@@ -498,6 +505,13 @@ body{background:var(--bg);min-height:100vh}
     </fieldset>
     <div class="field"><span class="lbl" id="heartLbl">Как сильно хочется</span><div class="hearts-pick" id="heartPick" role="group" aria-labelledby="heartLbl"></div></div>
     <div class="field"><span class="lbl" id="needLbl">Нужность</span><div class="seg" id="needSeg" role="group" aria-labelledby="needLbl"></div></div>
+    <div class="field"><span class="lbl" id="privLbl">Кто видит</span>
+      <div class="seg" id="privSeg" role="group" aria-labelledby="privLbl">
+        <button type="button" data-priv="0">Публично</button>
+        <button type="button" data-priv="1">🔒 Личное</button>
+      </div>
+      <p class="priv-hint" id="privHint"></p>
+    </div>
     <div class="field"><label for="fState">Статус</label><select class="fld" id="fState"></select></div>
 
     <div class="panel-f">
@@ -653,7 +667,8 @@ body{background:var(--bg);min-height:100vh}
       ph.addEventListener('pointerup',function(e){ if(sx===null)return; var dx=e.clientX-sx; sx=null; if(Math.abs(dx)>35){ n.dataset.swiped='1'; go(dx<0?1:-1); } });
     }
     var body=el('div',{class:'cb'});
-    body.append(el('div',{class:'mrow'},heartsEl(it.desire||0),(it.need?el('span',{class:'need n'+it.need,text:NEED_SHORT[it.need]}):null)));
+    body.append(el('div',{class:'mrow'},heartsEl(it.desire||0),(it.private?el('span',{class:'priv',title:'Видят только Артём и Юля',text:'🔒 личное'}):(it.need?el('span',{class:'need n'+it.need,text:NEED_SHORT[it.need]}):null))));
+    if(it.private)n.classList.add('is-private');
     body.append(el('h3',{text:it.title||'Без названия'}));
     if(multi)body.append(el('p',{class:'vlabel',text:v.label||('Вариант '+(vi+1))}));
     var pt=priceText(v);
@@ -717,6 +732,7 @@ body{background:var(--bg);min-height:100vh}
     var meta=el('div',{class:'vw-meta'});
     if(it.desire)meta.append(heartsEl(it.desire),el('span',{class:'lbl',text:DESIRE[it.desire]}));
     if(it.need)meta.append(el('span',{class:'need n'+it.need,text:NEED[it.need]}));
+    if(it.private)meta.append(el('span',{class:'priv',text:'🔒 личное — гости не видят'}));
     if(meta.childNodes.length)b.append(meta);
     var pt=priceText(v);
     b.append(el('p',{class:'vw-price'+(pt?'':' none'),text:pt||'Цена не указана'}));
@@ -790,7 +806,7 @@ body{background:var(--bg);min-height:100vh}
     var who=$('who'); who.textContent='';
     PROFILES.forEach(function(p){who.append(el('button',{type:'button','aria-pressed':String(p[0]===profile),onclick:function(){setProfile(p[0])}},p[1]))});
     var g=role==='guest';
-    $('addBtn').hidden=g; $('chPin').hidden=g; $('guestNote').hidden=!g; $('spoilWrap').hidden=g;
+    $('addBtn').hidden=g; $('chPin').hidden=g; $('backupBtn').hidden=g; $('guestNote').hidden=!g; $('spoilWrap').hidden=g;
     $('fStatus').hidden=g;
   }
   function authToken(p){try{return localStorage.getItem('wl-auth-'+p)||'';}catch(e){return ''}}
@@ -834,6 +850,14 @@ body{background:var(--bg);min-height:100vh}
   }
   (function initPin(){
     $('chPin').addEventListener('click',function(){openPinSheet('change',profile)});
+    $('backupBtn').addEventListener('click',function(){
+      var data={exported:new Date().toISOString(),list:LIST,title:listTitle,sections:sections,items:items};
+      var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='vishlist-'+LIST+'-'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.append(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+      toast('Копия сохранена в «Загрузки»');
+    });
     $('viewSheet').addEventListener('click',function(e){if(e.target===$('viewSheet'))closeView()});
     document.addEventListener('keydown',function(e){
       if($('viewSheet').hidden)return;
@@ -890,6 +914,11 @@ body{background:var(--bg);min-height:100vh}
     form.desire=n;
     Array.prototype.forEach.call($('heartPick').querySelectorAll('.hp'),function(b,i){b.classList.toggle('on',i<n);b.setAttribute('aria-pressed',String(i+1===n));});
     $('hpLabel').textContent=DESIRE[n];
+  }
+  function setPriv(p){
+    form.priv=!!p;
+    Array.prototype.forEach.call($('privSeg').querySelectorAll('button'),function(b){b.setAttribute('aria-pressed',String((b.dataset.priv==='1')===form.priv))});
+    $('privHint').textContent=form.priv?'Карточку видите только вы с '+(LIST==='artem'?'Юлей':'Артёмом')+' после входа по PIN. Гости её не видят.':'Карточку видят все, у кого есть ссылка.';
   }
   function setNeed(n){
     form.need=n;
@@ -954,7 +983,7 @@ body{background:var(--bg);min-height:100vh}
     $('fDesc').value=d.desc||'';
     var l=d.links||{};
     SHOPS.forEach(function(s){$('lk_'+s[0]).value=l[s[0]]||''});
-    setHearts(d.desire||0); setNeed(d.need||0);
+    setHearts(d.desire||0); setNeed(d.need||0); setPriv(!!d.private);
     $('fState').value=d.status||'idea';
     $('delBtn').hidden=isNew; $('delBtn').textContent='Удалить'; $('delBtn').classList.remove('armed');
     $('saveBtn').disabled=false; $('saveBtn').textContent='Сохранить';
@@ -974,6 +1003,7 @@ body{background:var(--bg);min-height:100vh}
     hp.append(el('span',{class:'hp-label',id:'hpLabel',text:DESIRE[0]}));
     var seg=$('needSeg');
     NEED.forEach(function(t,i){seg.append(el('button',{type:'button',onclick:function(){setNeed(i)}},t))});
+    Array.prototype.forEach.call($('privSeg').querySelectorAll('button'),function(b){b.addEventListener('click',function(){setPriv(b.dataset.priv==='1')})});
     var st=$('fState'); STATUS.forEach(function(s){st.append(el('option',{value:s[0],text:s[1]}))});
     $('fSection').addEventListener('change',function(){
       var isNew=$('fSection').value==='__new'; $('newSecField').hidden=!isNew; if(isNew)$('fNewSec').focus(); fillGroups(); drawPhoto($('fTitle').value,currentSection());
@@ -1060,6 +1090,12 @@ body{background:var(--bg);min-height:100vh}
     if(out.length>1){doc.variantLabel=base.label; doc.variants=out.slice(1);}
     var prev=form.id?items.filter(function(x){return x.id===form.id})[0]:null;
     doc.created=prev&&prev.created?prev.created:Date.now();
+    if(form.priv)doc.private=true;
+    if(prev){
+      var keep=Object.assign({},prev);
+      ['id','reserved','mine','price','priceTo','variants','variantLabel','private'].forEach(function(k){delete keep[k]});
+      doc=Object.assign(keep,doc);
+    }
     $('saveBtn').disabled=true; $('saveBtn').textContent='Сохраняю…';
     try{
       if(sectionList().indexOf(section)<0||sections.indexOf(section)<0){
