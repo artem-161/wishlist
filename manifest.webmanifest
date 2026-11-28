@@ -3,7 +3,7 @@
   "short_name": "Вишлист",
   "start_url": "./",
   "scope": "./",
-  "display": "browser",
+  "display": "standalone",
   "background_color": "#1f4a50",
   "theme_color": "#1f4a50",
   "icons": [
